@@ -3,12 +3,12 @@
   "name": "Backlogs",
   "year": "2025",
   "tracks": [
-    { "title": "CHANGES", "file": "track1.mp3", "length": "2:41" },
-    { "title": "Yikes", "file": "track2.mp3", "length": "3:08" },
-    { "title": "All Mine", "file": "track3.mp3", "length": "2:25" },
-    { "title": "Wouldn’t Leave", "file": "track4.mp3", "length": "3:25" },
-    { "title": "No Mistakes", "file": "track5.mp3", "length": "2:03" },
-    { "title": "Ghost Town", "file": "track6.mp3", "length": "4:31" },
-    { "title": "25", "file": "track7.mp3", "length": "3:35" }
+    { "title": "CHANGES", "file": "track1.mp3"},
+    { "title": "Earcandy", "file": "track2.mp3"},
+    { "title": "Emo trap", "file": "track3.mp3"},
+    { "title": "Decibels", "file": "track4.mp3"},
+    { "title": "No Mistakes", "file": "track5.mp3"},
+    { "title": "Ghost Town", "file": "track6.mp3"},
+    { "title": "25", "file": "track7.mp3"}
   ]
 }
