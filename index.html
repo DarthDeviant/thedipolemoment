@@ -75,13 +75,13 @@
     .controls .play {
       background: #1ed760;
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
     }
 
     .controls .play .icon {
-      width: 40px;
-      height: 40px;
+      width: 30px;
+      height: 30px;
     }
 
     .controls button:hover .icon {
@@ -216,44 +216,47 @@
 
   <script>
     async function loadAlbumData() {
-      // Load album data from an external JSON file in the 'data' folder
-      const response = await fetch('data/album-data.json');
-      const data = await response.json();
+      try {
+        const response = await fetch('data/album-data.json');
+        if (!response.ok) throw new Error('Failed to fetch album data');
+        const data = await response.json();
 
-      // Update album info
-      document.getElementById('album-cover').src = data.cover;
-      document.getElementById('dialog-image').src = data.cover;
-      document.getElementById('album-name').textContent = data.name;
+        // Update album info
+        document.getElementById('album-cover').src = data.cover;
+        document.getElementById('album-name').textContent = data.name;
 
-      // Populate track table dynamically
-      const trackTable = document.getElementById('track-table');
-      const trackFiles = data.tracks;
+        // Populate track table dynamically
+        const trackTable = document.getElementById('track-table');
+        const trackFiles = data.tracks;
 
-      let totalSeconds = 0;
+        let totalSeconds = 0;
 
-      for (let i = 0; i < trackFiles.length; i++) {
-        const track = trackFiles[i];
-        const audio = new Audio(`tracks/${track.file}`);
+        for (let i = 0; i < trackFiles.length; i++) {
+          const track = trackFiles[i];
+          const audio = new Audio(`tracks/${track.file}`);
 
-        audio.addEventListener('loadedmetadata', () => {
-          const duration = formatDuration(audio.duration);
-          totalSeconds += Math.floor(audio.duration);
+          audio.addEventListener('loadedmetadata', () => {
+            const duration = formatDuration(audio.duration);
+            totalSeconds += Math.floor(audio.duration);
 
-          const row = document.createElement('tr');
-          row.setAttribute('data-track', track.file);
-          row.innerHTML = `
-            <td>${i + 1}</td>
-            <td>${track.title}</td>
-            <td>${duration}</td>
-          `;
+            const row = document.createElement('tr');
+            row.setAttribute('data-track', track.file);
+            row.innerHTML = `
+              <td>${i + 1}</td>
+              <td>${track.title}</td>
+              <td>${duration}</td>
+            `;
 
-          row.addEventListener('click', () => playTrack(track.file, track.title));
-          trackTable.appendChild(row);
+            row.addEventListener('click', () => playTrack(track.file, track.title));
+            trackTable.appendChild(row);
 
-          if (i === trackFiles.length - 1) {
-            document.getElementById('album-info').textContent = `${data.year} · ${trackFiles.length} songs · ${formatDuration(totalSeconds)}`;
-          }
-        });
+            if (i === trackFiles.length - 1) {
+              document.getElementById('album-info').textContent = `${data.year} · ${trackFiles.length} songs · ${formatDuration(totalSeconds)}`;
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error loading album data:', error);
       }
     }
 
@@ -272,17 +275,21 @@
       currentTrackText.textContent = `Now Playing: ${title}`;
     }
 
-    function openDialog() {
-      document.getElementById('dialog-overlay').style.display = 'flex';
+    function playFirstTrack() {
+      const firstTrack = document.querySelector('#track-table tr');
+      if (firstTrack) {
+        const trackFile = firstTrack.getAttribute('data-track');
+        const trackTitle = firstTrack.querySelector('td:nth-child(2)').textContent;
+        playTrack(trackFile, trackTitle);
+      }
     }
 
-    function closeDialog() {
-      document.getElementById('dialog-overlay').style.display = 'none';
+    function shuffleTracks() {
+      console.log('Shuffle button clicked');
     }
 
     // Initialize the player
     loadAlbumData();
-
   </script>
 </body>
 </html>
