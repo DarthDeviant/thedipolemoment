@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Album Header Update</title>
+  <title>MY ALBUM</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,98 +13,216 @@
       padding: 0;
     }
 
-    .header {
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #1c1c1c;
+      border-radius: 10px;
+    }
+
+    header {
       display: flex;
       align-items: center;
       gap: 20px;
       padding: 40px;
-      background: #121212;
+      background: linear-gradient(135deg, #3a7bd5, #3a6073);
+      border-radius: 10px;
+      color: #fff;
     }
 
-    .header img {
+    header img {
       width: 150px;
       height: 150px;
       border-radius: 10px;
       object-fit: cover;
+      cursor: pointer;
     }
 
-    .header .info {
+    .info {
       flex-grow: 1;
     }
 
-    .header .info h1 {
+    .info h1 {
       font-size: 3rem;
       margin: 0;
       font-weight: bold;
     }
 
-    .header .info p {
+    .info p {
       font-size: 1.2rem;
-      color: #b3b3b3;
+      color: #e0e0e0;
       margin: 10px 0 0;
     }
 
-    .header .controls {
+    .controls {
       display: flex;
+      gap: 10px;
       align-items: center;
-      gap: 15px;
     }
 
-    .header .controls button {
+    .controls button {
       background: none;
       border: none;
       cursor: pointer;
+      color: #b3b3b3;
+      font-size: 1.5rem;
     }
 
-    .header .controls .play {
-      background-color: #1db954;
+    .controls button:hover {
+      color: #fff;
+    }
+
+    .controls .heart {
+      color: #1ed760; /* Green for the heart button */
+    }
+
+    .controls .play {
+      background: #1ed760;
       color: #fff;
       width: 50px;
       height: 50px;
       border-radius: 50%;
       display: flex;
-      justify-content: center;
       align-items: center;
-      font-size: 1.5rem;
-      border: none;
+      justify-content: center;
+      font-size: 1.8rem;
     }
 
-    .header .controls .play:hover {
-      background-color: #1ed760;
+    .track-list {
+      margin: 20px 0;
     }
 
-    .header .controls .icon {
-      font-size: 1.5rem;
+    .track-list table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .track-list th, .track-list td {
+      text-align: left;
+      padding: 10px;
+    }
+
+    .track-list th {
+      color: #b3b3b3;
+      border-bottom: 1px solid #333;
+    }
+
+    .track-list tr {
+      border-bottom: 1px solid #333;
+    }
+
+    .track-list tr:hover {
+      background-color: #333;
+    }
+
+    .track-list td {
       color: #fff;
     }
 
-    .header .controls .icon.heart {
-      color: #1db954;
+    .player {
+      text-align: center;
     }
 
-    .header .controls .icon:hover {
-      color: #ccc;
+    audio {
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    #current-track {
+      margin-top: 10px;
+      color: #b3b3b3;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="image.jpg" alt="Album Cover">
-    <div class="info">
-      <h1>ye</h1>
-      <p>Kanye West · 2018 · 7 songs, 23 min 43 sec</p>
+  <div class="container">
+    <header>
+      <img id="album-cover" src="image.jpg" alt="Album Cover">
+      <div class="info">
+        <h1 id="album-name">Album Name</h1>
+        <p id="album-info">Album Year · Total Songs · Total Length</p>
+        <div class="controls">
+          <button class="heart">❤</button>
+          <button class="play" onclick="playFirstTrack()">▶</button>
+          <button class="shuffle">🔀</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="track-list">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Length</th>
+          </tr>
+        </thead>
+        <tbody id="track-table">
+          <!-- Tracks will be populated dynamically -->
+        </tbody>
+      </table>
     </div>
-    <div class="controls">
-      <button class="icon shuffle" title="Shuffle">
-        🔀
-      </button>
-      <button class="icon heart" title="Add to Favorites">
-        ❤️
-      </button>
-      <button class="play" title="Play">
-        ▶
-      </button>
+
+    <div class="player">
+      <audio id="audio-player" controls>
+        <source id="audio-source" src="" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+      <p id="current-track">Now Playing: None</p>
     </div>
   </div>
+
+  <script>
+    async function loadAlbumData() {
+      // Load album data from an external JSON file
+      const response = await fetch('data/album-data.json');
+      const data = await response.json();
+
+      // Update album info
+      document.getElementById('album-cover').src = data.cover;
+      document.getElementById('album-name').textContent = data.name;
+      document.getElementById('album-info').textContent = `${data.year} · ${data.tracks.length} songs · ${formatDuration(data.totalDuration)}`;
+
+      // Populate track table
+      const trackTable = document.getElementById('track-table');
+      data.tracks.forEach((track, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${track.title}</td>
+          <td>${formatDuration(track.duration)}</td>
+        `;
+        row.addEventListener('click', () => playTrack(track.file, track.title));
+        trackTable.appendChild(row);
+      });
+    }
+
+    function formatDuration(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function playTrack(file, title) {
+      const audioPlayer = document.getElementById('audio-player');
+      const currentTrackText = document.getElementById('current-track');
+
+      audioPlayer.src = `tracks/${file}`;
+      audioPlayer.play();
+      currentTrackText.textContent = `Now Playing: ${title}`;
+    }
+
+    function playFirstTrack() {
+      const firstTrack = document.querySelector('#track-table tr');
+      if (firstTrack) {
+        firstTrack.click();
+      }
+    }
+
+    // Initialize
+    loadAlbumData();
+  </script>
 </body>
 </html>
