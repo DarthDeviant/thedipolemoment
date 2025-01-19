@@ -277,6 +277,7 @@
         if (!trackAccessible) {
           row.classList.add('unavailable'); // Add a class to grey out the row
           row.style.color = '#888'; // Grey out the text
+          track.inaccessible = true; // Mark the track as inaccessible
         } else {
           // Add click event listener to play the track
           row.addEventListener('click', () => {
@@ -333,41 +334,46 @@
   function playFirstTrack() {
     if (trackOrder.length > 0) {
       currentTrackIndex = 0; // Set to the first track
-      const firstTrack = trackOrder[currentTrackIndex];
-      if (firstTrack) playTrack(firstTrack.file, firstTrack.title);
+      playNextAccessibleTrack(); // Play the first accessible track
     }
   }
 
   function playNextTrack() {
     if (trackOrder.length > 0) {
       currentTrackIndex = (currentTrackIndex + 1) % trackOrder.length;
-      const nextTrack = trackOrder[currentTrackIndex];
-
-      // Check if the next track is accessible
-      const trackTable = document.getElementById('track-table');
-      const nextRow = trackTable.querySelector(`tr[data-track="${nextTrack.file}"]`);
-      if (!nextRow || nextRow.classList.contains('unavailable')) {
-        playNextTrack(); // Skip inaccessible tracks
-      } else {
-        playTrack(nextTrack.file, nextTrack.title);
-      }
+      playNextAccessibleTrack(); // Play the next accessible track
     }
   }
 
   function playPreviousTrack() {
     if (trackOrder.length > 0) {
       currentTrackIndex = (currentTrackIndex - 1 + trackOrder.length) % trackOrder.length;
-      const prevTrack = trackOrder[currentTrackIndex];
+      playPreviousAccessibleTrack(); // Play the previous accessible track
+    }
+  }
 
-      // Check if the previous track is accessible
-      const trackTable = document.getElementById('track-table');
-      const prevRow = trackTable.querySelector(`tr[data-track="${prevTrack.file}"]`);
-      if (!prevRow || prevRow.classList.contains('unavailable')) {
-        playPreviousTrack(); // Skip inaccessible tracks
-      } else {
-        playTrack(prevTrack.file, prevTrack.title);
+  function playNextAccessibleTrack() {
+    for (let i = currentTrackIndex; i < trackOrder.length; i++) {
+      const track = trackOrder[i];
+      if (!track.inaccessible) {
+        currentTrackIndex = i;
+        playTrack(track.file, track.title);
+        return;
       }
     }
+    console.warn('No accessible tracks found to play next.');
+  }
+
+  function playPreviousAccessibleTrack() {
+    for (let i = currentTrackIndex; i >= 0; i--) {
+      const track = trackOrder[i];
+      if (!track.inaccessible) {
+        currentTrackIndex = i;
+        playTrack(track.file, track.title);
+        return;
+      }
+    }
+    console.warn('No accessible tracks found to play previous.');
   }
 
   function shuffleTracks() {
@@ -384,7 +390,10 @@
         <td>${formatDuration(track.duration)}</td>
       `;
 
-      if (!row.classList.contains('unavailable')) {
+      if (track.inaccessible) {
+        row.classList.add('unavailable');
+        row.style.color = '#888';
+      } else {
         row.addEventListener('click', () => {
           currentTrackIndex = index; // Update the current track index
           playTrack(track.file, track.title);
@@ -409,6 +418,7 @@
   // Initialize the player
   loadAlbumData();
 </script>
+
 
 
 </body>
