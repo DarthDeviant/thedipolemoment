@@ -1,295 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MY ALBUM</title>
-  <style>
-    body {
-      font-family: 'Roboto', Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-      margin: 0;
-      padding: 0;
+<script>
+  let trackOrder = [];
+  let currentTrackIndex = -1; // To track the current playing index
+
+  async function loadAlbumData() {
+    try {
+      const response = await fetch('data/album-data.json');
+      if (!response.ok) throw new Error('Failed to fetch album data');
+      const data = await response.json();
+
+      // Update album info
+      document.getElementById('album-cover').src = data.cover;
+      document.getElementById('dialog-image').src = data.cover;
+      document.getElementById('album-name').textContent = data.name;
+
+      // Populate track table
+      const trackTable = document.getElementById('track-table');
+      const tracks = data.tracks;
+
+      trackOrder = tracks; // Store the original order
+      let totalSeconds = 0;
+
+      tracks.forEach((track, index) => {
+        const row = document.createElement('tr');
+        row.setAttribute('data-track', track.file);
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${track.title}</td>
+          <td>${formatDuration(track.duration)}</td>
+        `;
+        row.addEventListener('click', () => {
+          currentTrackIndex = index; // Update the current track index
+          playTrack(track.file, track.title);
+        });
+        trackTable.appendChild(row);
+
+        totalSeconds += track.duration;
+      });
+
+      document.getElementById('album-info').textContent = `${data.year} · ${tracks.length} songs · ${formatDuration(totalSeconds)}`;
+    } catch (error) {
+      console.error('Error loading album data:', error);
     }
+  }
 
-    .container {
-      max-width: 900px;
-      margin: 20px auto;
-      padding: 20px;
+  function formatDuration(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  function playTrack(file, title) {
+    const audioPlayer = document.getElementById('audio-player');
+    const currentTrackText = document.getElementById('current-track');
+
+    audioPlayer.src = `tracks/${file}`;
+    audioPlayer.play();
+    currentTrackText.textContent = `Now Playing: ${title}`;
+  }
+
+  function playFirstTrack() {
+    if (trackOrder.length > 0) {
+      currentTrackIndex = 0; // Set to the first track
+      const firstTrack = trackOrder[currentTrackIndex];
+      playTrack(firstTrack.file, firstTrack.title);
     }
+  }
 
-    header {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      padding: 20px;
-      background: #181818;
-      border-radius: 10px;
+  function playNextTrack() {
+    if (trackOrder.length > 0 && currentTrackIndex < trackOrder.length - 1) {
+      currentTrackIndex += 1; // Move to the next track
+      const nextTrack = trackOrder[currentTrackIndex];
+      playTrack(nextTrack.file, nextTrack.title);
     }
+  }
 
-    header img {
-      width: 200px;
-      height: 200px;
-      border-radius: 5px;
-      object-fit: cover;
+  function playPreviousTrack() {
+    if (trackOrder.length > 0 && currentTrackIndex > 0) {
+      currentTrackIndex -= 1; // Move to the previous track
+      const prevTrack = trackOrder[currentTrackIndex];
+      playTrack(prevTrack.file, prevTrack.title);
     }
+  }
 
-    .info {
-      flex-grow: 1;
-    }
+  function shuffleTracks() {
+    const shuffled = [...trackOrder].sort(() => Math.random() - 0.5);
+    const trackTable = document.getElementById('track-table');
+    trackTable.innerHTML = '';
 
-    .info h1 {
-      font-size: 3rem;
-      margin: 0;
-      font-weight: bold;
-    }
+    shuffled.forEach((track, index) => {
+      const row = document.createElement('tr');
+      row.setAttribute('data-track', track.file);
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${track.title}</td>
+        <td>${formatDuration(track.duration)}</td>
+      `;
+      row.addEventListener('click', () => {
+        currentTrackIndex = index; // Update the current track index
+        playTrack(track.file, track.title);
+      });
+      trackTable.appendChild(row);
+    });
 
-    .info p {
-      font-size: 1.2rem;
-      color: #b3b3b3;
-      margin: 10px 0;
-    }
+    trackOrder = shuffled; // Update the global track order
+    currentTrackIndex = -1; // Reset current track index since the order changed
+  }
 
-    .controls {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      margin-top: 15px;
-    }
+  function openDialog() {
+    document.getElementById('dialog-overlay').style.display = 'flex';
+  }
 
-    .controls button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  function closeDialog() {
+    document.getElementById('dialog-overlay').style.display = 'none';
+  }
 
-    .controls .icon {
-      width: 24px;
-      height: 24px;
-    }
-
-    .controls .play {
-      background: #1ed760;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-    }
-
-    .controls .play .icon {
-      width: 30px;
-      height: 30px;
-    }
-
-    .controls button:hover .icon {
-      filter: brightness(1.2);
-    }
-
-    .track-list {
-      margin-top: 20px;
-      background: #181818;
-      border-radius: 10px;
-      padding: 10px;
-    }
-
-    .track-list table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .track-list th, .track-list td {
-      text-align: left;
-      padding: 10px;
-      font-size: 1rem;
-    }
-
-    .track-list th {
-      color: #b3b3b3;
-      border-bottom: 1px solid #282828;
-    }
-
-    .track-list tr {
-      cursor: pointer;
-      border-bottom: 1px solid #282828;
-      transition: background-color 0.2s;
-    }
-
-    .track-list tr:hover {
-      background-color: #282828;
-    }
-
-    .track-list td {
-      color: #fff;
-    }
-
-    .player {
-      text-align: center;
-      margin-top: 20px;
-      padding: 20px;
-      background: #181818;
-      border-radius: 10px;
-    }
-
-    audio {
-      width: 100%;
-      margin: 10px 0;
-    }
-
-    #current-track {
-      margin-top: 10px;
-      color: #b3b3b3;
-    }
-
-    .player-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .player-buttons button {
-      background: #282828;
-      border: none;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 50px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .player-buttons button:hover {
-      background: #1ed760;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <img id="album-cover" src="image.jpg" alt="Album Cover">
-      <div class="info">
-        <h1 id="album-name">Album Name</h1>
-        <p id="album-info">Album Year · Total Songs · Total Length</p>
-        <div class="controls">
-          <button class="heart">
-            <img src="assets/icons/heart.png" alt="Heart" class="icon">
-          </button>
-          <button class="play" onclick="playFirstTrack()">
-            <img src="assets/icons/play.png" alt="Play" class="icon">
-          </button>
-          <button class="shuffle" onclick="shuffleTracks()">
-            <img src="assets/icons/shuffle.png" alt="Shuffle" class="icon">
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <div class="track-list">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Length</th>
-          </tr>
-        </thead>
-        <tbody id="track-table">
-          <!-- Tracks will be populated dynamically -->
-        </tbody>
-      </table>
-    </div>
-
-    <div class="player">
-      <audio id="audio-player" controls>
-        <source id="audio-source" src="" type="audio/mpeg">
-        Your browser does not support the audio element.
-      </audio>
-      <p id="current-track">Now Playing: None</p>
-      <div class="player-buttons">
-        <button onclick="playPreviousTrack()">⏮ Previous</button>
-        <button onclick="playNextTrack()">⏭ Next</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    async function loadAlbumData() {
-      try {
-        const response = await fetch('data/album-data.json');
-        if (!response.ok) throw new Error('Failed to fetch album data');
-        const data = await response.json();
-
-        // Update album info
-        document.getElementById('album-cover').src = data.cover;
-        document.getElementById('album-name').textContent = data.name;
-
-        // Populate track table dynamically
-        const trackTable = document.getElementById('track-table');
-        const trackFiles = data.tracks;
-
-        let totalSeconds = 0;
-
-        for (let i = 0; i < trackFiles.length; i++) {
-          const track = trackFiles[i];
-          const audio = new Audio(`tracks/${track.file}`);
-
-          audio.addEventListener('loadedmetadata', () => {
-            const duration = formatDuration(audio.duration);
-            totalSeconds += Math.floor(audio.duration);
-
-            const row = document.createElement('tr');
-            row.setAttribute('data-track', track.file);
-            row.innerHTML = `
-              <td>${i + 1}</td>
-              <td>${track.title}</td>
-              <td>${duration}</td>
-            `;
-
-            row.addEventListener('click', () => playTrack(track.file, track.title));
-            trackTable.appendChild(row);
-
-            if (i === trackFiles.length - 1) {
-              document.getElementById('album-info').textContent = `${data.year} · ${trackFiles.length} songs · ${formatDuration(totalSeconds)}`;
-            }
-          });
-        }
-      } catch (error) {
-        console.error('Error loading album data:', error);
-      }
-    }
-
-    function formatDuration(seconds) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = Math.floor(seconds % 60);
-      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-
-    function playTrack(file, title) {
-      const audioPlayer = document.getElementById('audio-player');
-      const currentTrackText = document.getElementById('current-track');
-
-      audioPlayer.src = `tracks/${file}`;
-      audioPlayer.play();
-      currentTrackText.textContent = `Now Playing: ${title}`;
-    }
-
-    function playFirstTrack() {
-      const firstTrack = document.querySelector('#track-table tr');
-      if (firstTrack) {
-        const trackFile = firstTrack.getAttribute('data-track');
-        const trackTitle = firstTrack.querySelector('td:nth-child(2)').textContent;
-        playTrack(trackFile, trackTitle);
-      }
-    }
-
-    function shuffleTracks() {
-      console.log('Shuffle button clicked');
-    }
-
-    // Initialize the player
-    loadAlbumData();
-  </script>
-</body>
-</html>
+  // Initialize the player
+  loadAlbumData();
+</script>
