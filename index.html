@@ -62,25 +62,30 @@
       background: none;
       border: none;
       cursor: pointer;
-      color: #b3b3b3;
-      font-size: 1.5rem;
-      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .controls button:hover {
-      color: #1ed760;
+    .controls .icon {
+      width: 24px;
+      height: 24px;
     }
 
     .controls .play {
       background: #1ed760;
-      color: #fff;
+      border-radius: 50%;
       width: 60px;
       height: 60px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
+    }
+
+    .controls .play .icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .controls button:hover .icon {
+      filter: brightness(1.2);
     }
 
     .track-list {
@@ -168,9 +173,15 @@
         <h1 id="album-name">Album Name</h1>
         <p id="album-info">Album Year · Total Songs · Total Length</p>
         <div class="controls">
-          <button class="heart">❤</button>
-          <button class="play" onclick="playFirstTrack()">▶</button>
-          <button class="shuffle" onclick="shuffleTracks()">🔀</button>
+          <button class="heart">
+            <img src="assets/icons/heart.png" alt="Heart" class="icon">
+          </button>
+          <button class="play" onclick="playFirstTrack()">
+            <img src="assets/icons/play.png" alt="Play" class="icon">
+          </button>
+          <button class="shuffle" onclick="shuffleTracks()">
+            <img src="assets/icons/shuffle.png" alt="Shuffle" class="icon">
+          </button>
         </div>
       </div>
     </header>
@@ -204,7 +215,74 @@
   </div>
 
   <script>
-    // JavaScript code remains the same
+    async function loadAlbumData() {
+      // Load album data from an external JSON file in the 'data' folder
+      const response = await fetch('data/album-data.json');
+      const data = await response.json();
+
+      // Update album info
+      document.getElementById('album-cover').src = data.cover;
+      document.getElementById('dialog-image').src = data.cover;
+      document.getElementById('album-name').textContent = data.name;
+
+      // Populate track table dynamically
+      const trackTable = document.getElementById('track-table');
+      const trackFiles = data.tracks;
+
+      let totalSeconds = 0;
+
+      for (let i = 0; i < trackFiles.length; i++) {
+        const track = trackFiles[i];
+        const audio = new Audio(`tracks/${track.file}`);
+
+        audio.addEventListener('loadedmetadata', () => {
+          const duration = formatDuration(audio.duration);
+          totalSeconds += Math.floor(audio.duration);
+
+          const row = document.createElement('tr');
+          row.setAttribute('data-track', track.file);
+          row.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${track.title}</td>
+            <td>${duration}</td>
+          `;
+
+          row.addEventListener('click', () => playTrack(track.file, track.title));
+          trackTable.appendChild(row);
+
+          if (i === trackFiles.length - 1) {
+            document.getElementById('album-info').textContent = `${data.year} · ${trackFiles.length} songs · ${formatDuration(totalSeconds)}`;
+          }
+        });
+      }
+    }
+
+    function formatDuration(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function playTrack(file, title) {
+      const audioPlayer = document.getElementById('audio-player');
+      const currentTrackText = document.getElementById('current-track');
+
+      audioPlayer.src = `tracks/${file}`;
+      audioPlayer.play();
+      currentTrackText.textContent = `Now Playing: ${title}`;
+    }
+
+    function openDialog() {
+      document.getElementById('dialog-overlay').style.display = 'flex';
+    }
+
+    function closeDialog() {
+      document.getElementById('dialog-overlay').style.display = 'none';
+    }
+
+    // Initialize the player
+    loadAlbumData();
+
   </script>
 </body>
 </html>
