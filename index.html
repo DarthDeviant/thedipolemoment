@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #1c1c1c;
+      border-radius: 10px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, #3a7bd5, #3a6073);
+      border-radius: 10px;
+      color: #fff;
+    }
+
+    header img {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    header .info {
+      flex-grow: 1;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin: 0;
+      font-weight: bold;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: #e0e0e0;
+      margin: 5px 0 0;
+    }
+
+    .track-list {
+      margin: 20px 0;
+    }
+
+    .track-list table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .track-list th, .track-list td {
+      text-align: left;
+      padding: 10px;
+    }
+
+    .track-list th {
+      color: #b3b3b3;
+      border-bottom: 1px solid #333;
+    }
+
+    .track-list tr {
+      border-bottom: 1px solid #333;
+    }
+
+    .track-list tr:hover {
+      background-color: #333;
+    }
+
+    .track-list td {
+      color: #fff;
+    }
+
+    .player {
+      text-align: center;
+    }
+
+    audio {
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    #current-track {
+      margin-top: 10px;
+      color: #b3b3b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img id="album-cover" src="image.png" alt="Album Cover">
+      <div class="info">
+        <h1 id="album-name">Album Name</h1>
+        <p id="album-info">Album Year · Total Songs · Total Length</p>
+      </div>
+    </header>
+
+    <div class="track-list">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Length</th>
+          </tr>
+        </thead>
+        <tbody id="track-table">
+          <!-- Tracks will be populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="player">
+      <audio id="audio-player" controls>
+        <source id="audio-source" src="" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+      <p id="current-track">Now Playing: None</p>
+    </div>
+  </div>
+
+  <script>
+    async function loadAlbumData() {
+      // Load album data from an external JSON file in the 'data' folder
+      const response = await fetch('data/album-data.json');
+      const data = await response.json();
+
+      // Update album info
+      document.getElementById('album-cover').src = data.cover;
+      document.getElementById('album-name').textContent = data.name;
+      document.getElementById('album-info').textContent = `${data.year} · ${data.tracks.length} songs · ${calculateTotalLength(data.tracks)}`;
+
+      // Populate track table
+      const trackTable = document.getElementById('track-table');
+      data.tracks.forEach((track, index) => {
+        const row = document.createElement('tr');
+        row.setAttribute('data-track', track.file);
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${track.title}</td>
+          <td>${track.length}</td>
+        `;
+        row.addEventListener('click', () => playTrack(track.file, track.title));
+        trackTable.appendChild(row);
+      });
+    }
+
+    function calculateTotalLength(tracks) {
+      let totalSeconds = tracks.reduce((sum, track) => {
+        const [minutes, seconds] = track.length.split(':').map(Number);
+        return sum + minutes * 60 + seconds;
+      }, 0);
+
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function playTrack(file, title) {
+      const audioPlayer = document.getElementById('audio-player');
+      const currentTrackText = document.getElementById('current-track');
+
+      audioPlayer.src = `tracks/${file}`;
+      audioPlayer.play();
+      currentTrackText.textContent = `Now Playing: ${title}`;
+    }
+
+    // Initialize the player
+    loadAlbumData();
+  </script>
+</body>
+</html>
