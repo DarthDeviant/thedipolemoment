@@ -260,26 +260,47 @@
       trackOrder = tracks; // Store the original order
       let totalSeconds = 0;
 
-      tracks.forEach((track, index) => {
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+
+        // Create a new row for each track
         const row = document.createElement('tr');
         row.setAttribute('data-track', track.file);
         row.innerHTML = `
-          <td>${index + 1}</td>
+          <td>${i + 1}</td>
           <td>${track.title}</td>
           <td>${formatDuration(track.duration)}</td>
         `;
-        row.addEventListener('click', () => {
-          currentTrackIndex = index; // Update the current track index
-          playTrack(track.file, track.title);
-        });
-        trackTable.appendChild(row);
 
-        totalSeconds += track.duration;
-      });
+        // Check if the track file exists
+        const trackAccessible = await checkFileAccessibility(`tracks/${track.file}`);
+        if (!trackAccessible) {
+          row.classList.add('unavailable'); // Add a class to grey out the row
+          row.style.color = '#888'; // Grey out the text
+        } else {
+          // Add click event listener to play the track
+          row.addEventListener('click', () => {
+            currentTrackIndex = i; // Update the current track index
+            playTrack(track.file, track.title);
+          });
+          totalSeconds += track.duration;
+        }
+
+        trackTable.appendChild(row);
+      }
 
       document.getElementById('album-info').textContent = `${data.year} · ${tracks.length} songs · ${formatDuration(totalSeconds)}`;
     } catch (error) {
       console.error('Error loading album data:', error);
+    }
+  }
+
+  async function checkFileAccessibility(url) {
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      return response.ok;
+    } catch {
+      return false;
     }
   }
 
@@ -297,39 +318,55 @@
     audioPlayer.play();
     currentTrackText.textContent = `Now Playing: ${title}`;
 
-    // Update automatic skip logic
-    audioPlayer.onended = null; // Remove default onended behavior
-    audioPlayer.addEventListener('timeupdate', () => {
+    // Add timeupdate event listener to handle skipping
+    audioPlayer.ontimeupdate = () => {
       if (audioPlayer.duration - audioPlayer.currentTime <= 4) {
-        playNextTrack(); // Automatically play the next track
+        // Ensure the next track is prepared for playback
+        audioPlayer.onended = () => playNextTrack();
       }
-    });
+    };
+
+    // Ensure next track plays when the song ends
+    audioPlayer.onended = playNextTrack;
   }
 
   function playFirstTrack() {
     if (trackOrder.length > 0) {
       currentTrackIndex = 0; // Set to the first track
       const firstTrack = trackOrder[currentTrackIndex];
-      playTrack(firstTrack.file, firstTrack.title);
+      if (firstTrack) playTrack(firstTrack.file, firstTrack.title);
     }
   }
 
   function playNextTrack() {
-    const audioPlayer = document.getElementById('audio-player');
-    if (trackOrder.length > 0 && currentTrackIndex < trackOrder.length - 1) {
-      currentTrackIndex += 1; // Move to the next track
+    if (trackOrder.length > 0) {
+      currentTrackIndex = (currentTrackIndex + 1) % trackOrder.length;
       const nextTrack = trackOrder[currentTrackIndex];
-      playTrack(nextTrack.file, nextTrack.title);
-    } else {
-      audioPlayer.pause(); // Stop if there are no more tracks
+
+      // Check if the next track is accessible
+      const trackTable = document.getElementById('track-table');
+      const nextRow = trackTable.querySelector(`tr[data-track="${nextTrack.file}"]`);
+      if (!nextRow || nextRow.classList.contains('unavailable')) {
+        playNextTrack(); // Skip inaccessible tracks
+      } else {
+        playTrack(nextTrack.file, nextTrack.title);
+      }
     }
   }
 
   function playPreviousTrack() {
-    if (trackOrder.length > 0 && currentTrackIndex > 0) {
-      currentTrackIndex -= 1; // Move to the previous track
+    if (trackOrder.length > 0) {
+      currentTrackIndex = (currentTrackIndex - 1 + trackOrder.length) % trackOrder.length;
       const prevTrack = trackOrder[currentTrackIndex];
-      playTrack(prevTrack.file, prevTrack.title);
+
+      // Check if the previous track is accessible
+      const trackTable = document.getElementById('track-table');
+      const prevRow = trackTable.querySelector(`tr[data-track="${prevTrack.file}"]`);
+      if (!prevRow || prevRow.classList.contains('unavailable')) {
+        playPreviousTrack(); // Skip inaccessible tracks
+      } else {
+        playTrack(prevTrack.file, prevTrack.title);
+      }
     }
   }
 
@@ -346,10 +383,14 @@
         <td>${track.title}</td>
         <td>${formatDuration(track.duration)}</td>
       `;
-      row.addEventListener('click', () => {
-        currentTrackIndex = index; // Update the current track index
-        playTrack(track.file, track.title);
-      });
+
+      if (!row.classList.contains('unavailable')) {
+        row.addEventListener('click', () => {
+          currentTrackIndex = index; // Update the current track index
+          playTrack(track.file, track.title);
+        });
+      }
+
       trackTable.appendChild(row);
     });
 
@@ -368,6 +409,7 @@
   // Initialize the player
   loadAlbumData();
 </script>
+
 
 </body>
 </html>
