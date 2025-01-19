@@ -296,6 +296,14 @@
     audioPlayer.src = `tracks/${file}`;
     audioPlayer.play();
     currentTrackText.textContent = `Now Playing: ${title}`;
+
+    // Update automatic skip logic
+    audioPlayer.onended = null; // Remove default onended behavior
+    audioPlayer.addEventListener('timeupdate', () => {
+      if (audioPlayer.duration - audioPlayer.currentTime <= 4) {
+        playNextTrack(); // Automatically play the next track
+      }
+    });
   }
 
   function playFirstTrack() {
@@ -307,10 +315,13 @@
   }
 
   function playNextTrack() {
+    const audioPlayer = document.getElementById('audio-player');
     if (trackOrder.length > 0 && currentTrackIndex < trackOrder.length - 1) {
       currentTrackIndex += 1; // Move to the next track
       const nextTrack = trackOrder[currentTrackIndex];
       playTrack(nextTrack.file, nextTrack.title);
+    } else {
+      audioPlayer.pause(); // Stop if there are no more tracks
     }
   }
 
@@ -357,5 +368,6 @@
   // Initialize the player
   loadAlbumData();
 </script>
+
 </body>
 </html>
