@@ -36,7 +36,6 @@
       height: 150px;
       border-radius: 10px;
       object-fit: cover;
-      cursor: pointer;
     }
 
     .info {
@@ -74,7 +73,7 @@
     }
 
     .controls .heart {
-      color: #1ed760; /* Green for the heart button */
+      color: #1ed760;
     }
 
     .controls .play {
@@ -133,6 +132,26 @@
       margin-top: 10px;
       color: #b3b3b3;
     }
+
+    .player-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .player-buttons button {
+      background: #1ed760;
+      border: none;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .player-buttons button:hover {
+      background: #1aa34a;
+    }
   </style>
 </head>
 <body>
@@ -145,7 +164,7 @@
         <div class="controls">
           <button class="heart">❤</button>
           <button class="play" onclick="playFirstTrack()">▶</button>
-          <button class="shuffle">🔀</button>
+          <button class="shuffle" onclick="shuffleTracks()">🔀</button>
         </div>
       </div>
     </header>
@@ -171,30 +190,41 @@
         Your browser does not support the audio element.
       </audio>
       <p id="current-track">Now Playing: None</p>
+      <div class="player-buttons">
+        <button onclick="playPreviousTrack()">⏮ Previous</button>
+        <button onclick="playNextTrack()">⏭ Next</button>
+      </div>
     </div>
   </div>
 
   <script>
+    let trackList = [];
+    let currentTrackIndex = 0;
+
     async function loadAlbumData() {
-      // Load album data from an external JSON file
       const response = await fetch('data/album-data.json');
       const data = await response.json();
 
-      // Update album info
       document.getElementById('album-cover').src = data.cover;
       document.getElementById('album-name').textContent = data.name;
       document.getElementById('album-info').textContent = `${data.year} · ${data.tracks.length} songs · ${formatDuration(data.totalDuration)}`;
 
-      // Populate track table
+      trackList = data.tracks;
+      populateTrackTable();
+    }
+
+    function populateTrackTable() {
       const trackTable = document.getElementById('track-table');
-      data.tracks.forEach((track, index) => {
+      trackTable.innerHTML = ''; // Clear the table
+
+      trackList.forEach((track, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${index + 1}</td>
           <td>${track.title}</td>
           <td>${formatDuration(track.duration)}</td>
         `;
-        row.addEventListener('click', () => playTrack(track.file, track.title));
+        row.addEventListener('click', () => playTrack(index));
         trackTable.appendChild(row);
       });
     }
@@ -205,21 +235,40 @@
       return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
-    function playTrack(file, title) {
+    function playTrack(index) {
+      currentTrackIndex = index;
+      const track = trackList[index];
+
       const audioPlayer = document.getElementById('audio-player');
       const currentTrackText = document.getElementById('current-track');
 
-      audioPlayer.src = `tracks/${file}`;
+      audioPlayer.src = `tracks/${track.file}`;
       audioPlayer.play();
-      currentTrackText.textContent = `Now Playing: ${title}`;
+      currentTrackText.textContent = `Now Playing: ${track.title}`;
     }
 
     function playFirstTrack() {
-      const firstTrack = document.querySelector('#track-table tr');
-      if (firstTrack) {
-        firstTrack.click();
-      }
+      playTrack(0);
     }
+
+    function playNextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % trackList.length;
+      playTrack(currentTrackIndex);
+    }
+
+    function playPreviousTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + trackList.length) % trackList.length;
+      playTrack(currentTrackIndex);
+    }
+
+    function shuffleTracks() {
+      trackList = trackList.sort(() => Math.random() - 0.5);
+      populateTrackTable();
+      playFirstTrack();
+    }
+
+    // Automatically play the next track when the current track ends
+    document.getElementById('audio-player').addEventListener('ended', playNextTrack);
 
     // Initialize
     loadAlbumData();
