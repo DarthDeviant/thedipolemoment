@@ -199,32 +199,43 @@
       document.getElementById('album-cover').src = data.cover;
       document.getElementById('dialog-image').src = data.cover;
       document.getElementById('album-name').textContent = data.name;
-      document.getElementById('album-info').textContent = `${data.year} · ${data.tracks.length} songs · ${calculateTotalLength(data.tracks)}`;
 
-      // Populate track table
+      // Populate track table dynamically
       const trackTable = document.getElementById('track-table');
-      data.tracks.forEach((track, index) => {
-        const row = document.createElement('tr');
-        row.setAttribute('data-track', track.file);
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${track.title}</td>
-          <td>${track.length}</td>
-        `;
-        row.addEventListener('click', () => playTrack(track.file, track.title));
-        trackTable.appendChild(row);
-      });
+      const trackFiles = data.tracks;
+
+      let totalSeconds = 0;
+
+      for (let i = 0; i < trackFiles.length; i++) {
+        const track = trackFiles[i];
+        const audio = new Audio(`tracks/${track.file}`);
+
+        audio.addEventListener('loadedmetadata', () => {
+          const duration = formatDuration(audio.duration);
+          totalSeconds += Math.floor(audio.duration);
+
+          const row = document.createElement('tr');
+          row.setAttribute('data-track', track.file);
+          row.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${track.title}</td>
+            <td>${duration}</td>
+          `;
+
+          row.addEventListener('click', () => playTrack(track.file, track.title));
+          trackTable.appendChild(row);
+
+          if (i === trackFiles.length - 1) {
+            document.getElementById('album-info').textContent = `${data.year} · ${trackFiles.length} songs · ${formatDuration(totalSeconds)}`;
+          }
+        });
+      }
     }
 
-    function calculateTotalLength(tracks) {
-      let totalSeconds = tracks.reduce((sum, track) => {
-        const [minutes, seconds] = track.length.split(':').map(Number);
-        return sum + minutes * 60 + seconds;
-      }, 0);
-
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    function formatDuration(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
     function playTrack(file, title) {
