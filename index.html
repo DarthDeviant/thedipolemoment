@@ -1,4 +1,245 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MY ALBUM</title>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: #181818;
+      border-radius: 10px;
+    }
+
+    header img {
+      width: 200px;
+      height: 200px;
+      border-radius: 5px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+
+    .info {
+      flex-grow: 1;
+    }
+
+    .info h1 {
+      font-size: 3rem;
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .info p {
+      font-size: 1.2rem;
+      color: #b3b3b3;
+      margin: 10px 0;
+    }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .controls button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .controls .icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .controls .play {
+      background: #1ed760;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+    }
+
+    .controls .play .icon {
+      width: 30px;
+      height: 30px;
+    }
+
+    .controls button:hover .icon {
+      filter: brightness(1.2);
+    }
+
+    .track-list {
+      margin-top: 20px;
+      background: #181818;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .track-list table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .track-list th, .track-list td {
+      text-align: left;
+      padding: 10px;
+      font-size: 1rem;
+    }
+
+    .track-list th {
+      color: #b3b3b3;
+      border-bottom: 1px solid #282828;
+    }
+
+    .track-list tr {
+      cursor: pointer;
+      border-bottom: 1px solid #282828;
+      transition: background-color 0.2s;
+    }
+
+    .track-list tr:hover {
+      background-color: #282828;
+    }
+
+    .track-list td {
+      color: #fff;
+    }
+
+    .player {
+      text-align: center;
+      margin-top: 20px;
+      padding: 20px;
+      background: #181818;
+      border-radius: 10px;
+    }
+
+    audio {
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    #current-track {
+      margin-top: 10px;
+      color: #b3b3b3;
+    }
+
+    .player-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .player-buttons button {
+      background: #282828;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .player-buttons button:hover {
+      background: #1ed760;
+    }
+
+    .dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .dialog-overlay img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img id="album-cover" src="image.jpg" alt="Album Cover" onclick="openDialog()">
+      <div class="info">
+        <h1 id="album-name">Album Name</h1>
+        <p id="album-info">Album Year · Total Songs · Total Length</p>
+        <div class="controls">
+          <button class="heart">
+            <img src="assets/icons/heart.png" alt="Heart" class="icon">
+          </button>
+          <button class="play" onclick="playFirstTrack()">
+            <img src="assets/icons/play.png" alt="Play" class="icon">
+          </button>
+          <button class="shuffle" onclick="shuffleTracks()">
+            <img src="assets/icons/shuffle.png" alt="Shuffle" class="icon">
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="track-list">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Length</th>
+          </tr>
+        </thead>
+        <tbody id="track-table">
+          <!-- Tracks will be populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="player">
+      <audio id="audio-player" controls>
+        <source id="audio-source" src="" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+      <p id="current-track">Now Playing: None</p>
+      <div class="player-buttons">
+        <button onclick="playPreviousTrack()">⏮ Previous</button>
+        <button onclick="playNextTrack()">⏭ Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dialog-overlay" class="dialog-overlay" onclick="closeDialog()">
+    <img id="dialog-image" src="image.jpg" alt="Album Cover">
+  </div>
+
+  <script>
+   <script>
   let trackOrder = [];
   let currentTrackIndex = -1; // To track the current playing index
 
@@ -117,3 +358,7 @@
   // Initialize the player
   loadAlbumData();
 </script>
+
+  </script>
+</body>
+</html>
