@@ -2,7 +2,6 @@
   "cover": "image.jpg",
   "name": "to **** to be true",
   "year": "2025",
-  "lengh": "16"
   "tracks": [
     { "title": "wanderer", "file": "Wanderer.mp3", "duration" : "142"},
     { "title": "transpose", "file": "transpose.mp3", "duration" : "158"},
