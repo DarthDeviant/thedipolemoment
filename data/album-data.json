@@ -8,7 +8,7 @@
     { "title": "defined", "file": "defined.mp3", "duration" : "144"},
     { "title": "emo trap", "file": "track3.mp3", "duration" : "164"},
     { "title": "decibels", "file": "decibels.mp3", "duration" : "106"},
-    { "title": " ", "file": "track6.mp3"},
+    { "title": " ", "file": "track6.mp3", "duration" : "120"},
     { "title": "25", "file": "finaltrack.mp3", "duration" : "218"}
   ]
 }
