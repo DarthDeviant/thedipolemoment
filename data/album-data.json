@@ -3,12 +3,12 @@
   "name": "to **** to be true",
   "year": "2025",
   "tracks": [
-    { "title": "wanderer", "file": "Wanderer.mp3", "duration" : "2:22"},
-    { "title": "transpose", "file": "transpose.mp3", "duration" : "2:38"},
-    { "title": "defined", "file": "defined.mp3", "duration" : "2:24"},
-    { "title": "emo trap", "file": "track3.mp3", "duration" : "2:44"},
-    { "title": "decibels", "file": "decibels.mp3", "duration" : "1:46"},
+    { "title": "wanderer", "file": "Wanderer.mp3", "duration" : "142"},
+    { "title": "transpose", "file": "transpose.mp3", "duration" : "158"},
+    { "title": "defined", "file": "defined.mp3", "duration" : "144"},
+    { "title": "emo trap", "file": "track3.mp3", "duration" : "164"},
+    { "title": "decibels", "file": "decibels.mp3", "duration" : "106"},
     { "title": " ", "file": "track6.mp3"},
-    { "title": "25", "file": "finaltrack.mp3", "duration" : "3:38"}
+    { "title": "25", "file": "finaltrack.mp3", "duration" : "218"}
   ]
 }
