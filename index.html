@@ -259,13 +259,7 @@
 
       trackOrder = tracks; // Store the original order
       let totalSeconds = 0;
-       data.tracks.forEach((track, index) => {
-          const row = document.createElement('tr');
-          row.innerHTML = `<td>${index + 1}</td><td>${track.title}</td><td>${track.duration || 'N/A'}</td>`;
-          trackTable.appendChild(row);
-        });
-      } catch (error) {
-        console.error(error);
+  
       for (let i = 0; i < tracks.length; i++) {
         const track = tracks[i];
         
