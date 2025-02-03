@@ -3,7 +3,7 @@
   "name": "Thoughts that came true",
   "year": "2025",
   "tracks": [
-    { "title": "Intro", "file": "intro.mp3", "duration" : "019"},
+    { "title": "Intro", "file": "intro.wav", "duration" : "019"},
     { "title": "Wanderer", "file": "Wanderer.mp3", "duration" : "142"},
     { "title": "Transpose", "file": "transpose.mp3", "duration" : "158"},
     { "title": "Defined", "file": "defined.mp3", "duration" : "144"},
