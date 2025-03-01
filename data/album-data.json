@@ -1,6 +1,6 @@
 {
-  "cover": "image2.jpg",
-  "name": "Deviated!",
+  "cover": "album_cover(updated).jpg",
+  "name": "cassiopi",
   "year": "2025",
   "tracks": [
     { "title": "Wanderer", "file": "Wanderer.mp3", "duration" : "142"},
