@@ -72,18 +72,16 @@
       }
     }
 
-     .album-cover-container {
+    .album-cover-container {
       position: relative;
-      width: 50%;
-      max-width: 50px;
-      height: 50%;
+      width: 100%;
+      max-width: 300px;
       flex-shrink: 0;
     }
 
     .album-cover {
-      width: 50%;
-      height: 50%;
-      max-width: 50%;
+      width: 100%;
+      aspect-ratio: 1/1;
       object-fit: cover;
       border-radius: 0.75rem;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
@@ -98,8 +96,6 @@
     .album-cover-container:active .album-cover {
       transform: scale(0.95);
     }
-
-    /* Removed rotation animation for album cover */
 
     .album-cover-overlay {
       position: absolute;
@@ -266,6 +262,8 @@
       overflow: hidden;
       text-overflow: ellipsis;
       padding: 0 1rem;
+      margin-bottom: 1rem;
+      color: #a1a1aa;
     }
 
     /* Progress bar */
@@ -311,60 +309,25 @@
       align-items: center;
     }
 
-    .volume-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
     .playback-controls {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
     }
 
     .btn-small {
       width: 2.5rem;
       height: 2.5rem;
       border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn-small:hover {
       background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .volume-slider {
-      width: 6rem;
-      height: 5px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 9999px;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .volume-level {
-      height: 100%;
-      background-color: white;
-      border-radius: 9999px;
-      width: 80%;
-      transition: width 0.1s ease;
-    }
-
-    .volume-handle {
-      width: 12px;
-      height: 12px;
-      background-color: white;
-      border-radius: 50%;
-      position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      left: 80%;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    .volume-slider:hover .volume-handle {
-      opacity: 1;
     }
 
     /* Track list */
@@ -516,14 +479,6 @@
       width: 24px;
       height: 24px;
     }
-
-    /* Current track display */
-    #current-track {
-      margin-top: 1rem;
-      text-align: center;
-      color: #a1a1aa;
-      font-size: 1rem;
-    }
   </style>
 </head>
 <body>
@@ -594,8 +549,19 @@
 
     <!-- Player display -->
     <div class="player-controls" id="player-controls">
-      <p id="current-track">Now Playing: None</p>
-      <div class="playback-controls" style="display: flex; justify-content: center; margin-top: 1rem;">
+      <p id="current-track" class="current-track-title">Now Playing: None</p>
+      
+      <!-- Progress bar -->
+      <div class="time-display">
+        <span id="current-time" class="time">0:00</span>
+        <span id="duration" class="time">0:00</span>
+      </div>
+      <div class="progress-container" id="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+        <div class="progress-handle" id="progress-handle"></div>
+      </div>
+      
+      <div class="playback-controls">
         <button class="btn-small" onclick="playPreviousTrack()">
           <svg class="icon" viewBox="0 0 24 24">
             <polygon points="19 20 9 12 19 4 19 20"></polygon>
@@ -731,11 +697,16 @@
 
       // Set audio source and play
       audioPlayer.src = `tracks/${file}`;
-      audioPlayer.play();
+      audioPlayer.play().catch(error => {
+        console.error('Error playing audio:', error);
+        showToast('Playback Error', 'Could not play the selected track.');
+      });
+      
       currentTrackText.textContent = `Now Playing: ${title}`;
 
       // Add timeupdate event listener to handle skipping
       audioPlayer.ontimeupdate = () => {
+        updateProgressBar();
         if (audioPlayer.duration - audioPlayer.currentTime <= 4) {
           // Ensure the next track is prepared for playback
           audioPlayer.onended = () => playNextTrack();
@@ -745,6 +716,46 @@
       // Ensure next track plays when the song ends
       audioPlayer.onended = playNextTrack;
     }
+
+    // Update progress bar
+    function updateProgressBar() {
+      const audioPlayer = document.getElementById('audio-player');
+      const progressBar = document.getElementById('progress-bar');
+      const progressHandle = document.getElementById('progress-handle');
+      const currentTimeDisplay = document.getElementById('current-time');
+      const durationDisplay = document.getElementById('duration');
+      
+      // Calculate progress percentage
+      const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100 || 0;
+      
+      // Update progress bar width
+      progressBar.style.width = `${progress}%`;
+      
+      // Update progress handle position
+      progressHandle.style.left = `${progress}%`;
+      
+      // Update time displays
+      currentTimeDisplay.textContent = formatDuration(audioPlayer.currentTime);
+      durationDisplay.textContent = formatDuration(audioPlayer.duration || 0);
+    }
+
+    // Handle seeking in the progress bar
+    document.getElementById('progress-container').addEventListener('click', function(e) {
+      const audioPlayer = document.getElementById('audio-player');
+      const progressContainer = this;
+      const rect = progressContainer.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const containerWidth = rect.width;
+      
+      // Calculate the new time based on click position
+      const newTime = (offsetX / containerWidth) * audioPlayer.duration;
+      
+      // Set the new time
+      if (!isNaN(newTime)) {
+        audioPlayer.currentTime = newTime;
+        updateProgressBar();
+      }
+    });
 
     // Play the first track
     function playFirstTrack() {
