@@ -72,10 +72,11 @@
       }
     }
 
+    /* Fixed album cover size */
     .album-cover-container {
       position: relative;
       width: 100%;
-      max-width: 300px;
+      max-width: 200px; /* Reduced from 300px to 200px */
       flex-shrink: 0;
     }
 
@@ -478,6 +479,21 @@
     .icon-large {
       width: 24px;
       height: 24px;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 767px) {
+      .album-cover-container {
+        max-width: 150px; /* Even smaller on mobile */
+      }
+      
+      .album-title {
+        font-size: 1.75rem;
+      }
+      
+      .album-meta {
+        font-size: 0.875rem;
+      }
     }
   </style>
 </head>
