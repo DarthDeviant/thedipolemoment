@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modern Music Player</title>
+  <title>My Mixtape</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
   <style>
     /* Reset and base styles */
@@ -97,18 +97,7 @@
       transform: scale(0.95);
     }
 
-    .album-cover.playing {
-      animation: rotate 20s linear infinite;
-    }
-
-    @keyframes rotate {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
-    }
+    /* Removed rotation animation for album cover */
 
     .album-cover-overlay {
       position: absolute;
@@ -422,112 +411,35 @@
       background: rgba(255, 255, 255, 0.3);
     }
 
-    .track-item {
-      display: flex;
-      align-items: center;
-      padding: 0.75rem;
-      transition: background-color 0.2s ease;
-      cursor: pointer;
+    /* Track table styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    .track-item:hover {
+    th, td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+    }
+
+    th {
+      color: #a1a1aa;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-bottom: 1px solid #27272a;
+    }
+
+    tr {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    tr:hover {
       background-color: rgba(255, 255, 255, 0.05);
     }
 
-    .track-item.active {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .track-number {
-      width: 2.5rem;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .track-number-text {
-      color: #a1a1aa;
-    }
-
-    .track-item.active .track-number-text {
-      color: white;
-    }
-
-    .track-play-icon {
-      display: none;
-    }
-
-    .track-item:hover .track-number-text,
-    .track-item.active .track-number-text {
-      display: none;
-    }
-
-    .track-item:hover .track-play-icon,
-    .track-item.active .track-play-icon {
-      display: block;
-    }
-
-    .track-title {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #d4d4d8;
-    }
-
-    .track-item.active .track-title {
-      color: white;
-    }
-
-    .track-duration {
-      width: 4rem;
-      text-align: right;
-      color: #a1a1aa;
-      font-size: 0.875rem;
-    }
-
-    /* Equalizer animation */
-    .equalizer {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .equalizer-bar {
-      width: 3px;
-      height: 16px;
-      background-color: white;
-      border-radius: 1px;
-    }
-
-    .equalizer-bar:nth-child(1) {
-      animation: equalize1 1s ease-in-out infinite;
-    }
-
-    .equalizer-bar:nth-child(2) {
-      animation: equalize2 1s ease-in-out infinite;
-      animation-delay: 0.2s;
-    }
-
-    .equalizer-bar:nth-child(3) {
-      animation: equalize3 1s ease-in-out infinite;
-      animation-delay: 0.4s;
-    }
-
-    @keyframes equalize1 {
-      0%, 100% { height: 8px; }
-      50% { height: 16px; }
-    }
-
-    @keyframes equalize2 {
-      0%, 100% { height: 16px; }
-      50% { height: 8px; }
-    }
-
-    @keyframes equalize3 {
-      0%, 100% { height: 8px; }
-      50% { height: 16px; }
+    tr.unavailable {
+      cursor: not-allowed;
     }
 
     /* Dialog */
@@ -538,32 +450,16 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0, 0, 0, 0.9);
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .dialog-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
     }
 
     .dialog-content {
       max-width: 90%;
       max-height: 90%;
       padding: 1rem;
-      transform: scale(0.9);
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-
-    .dialog-overlay.open .dialog-content {
-      transform: scale(1);
-      opacity: 1;
     }
 
     .dialog-image {
@@ -618,6 +514,14 @@
       width: 24px;
       height: 24px;
     }
+
+    /* Current track display */
+    #current-track {
+      margin-top: 1rem;
+      text-align: center;
+      color: #a1a1aa;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -628,8 +532,8 @@
     <!-- Album header -->
     <div class="album-header">
       <div class="album-cover-container" id="album-cover-container">
-        <img id="album-cover" src="https://placehold.co/400x400/18181b/FFFFFF?text=Album+Cover" alt="Album Cover" class="album-cover">
-        <div class="album-cover-overlay" id="album-cover-overlay">
+        <img id="album-cover" src="https://placehold.co/400x400/18181b/FFFFFF?text=Album+Cover" alt="Album Cover" onclick="openDialog()">
+        <div class="album-cover-overlay" id="album-cover-overlay" onclick="openDialog()">
           <svg class="icon-large" viewBox="0 0 24 24">
             <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
           </svg>
@@ -637,8 +541,8 @@
       </div>
 
       <div class="album-info">
-        <h1 class="album-title" id="album-title">Midnight Echoes</h1>
-        <p class="album-meta" id="album-meta">2023 · 7 songs · 25:22</p>
+        <h1 class="album-title" id="album-name">Loading Album...</h1>
+        <p class="album-meta" id="album-info">Loading...</p>
 
         <div class="album-controls">
           <button class="btn btn-icon btn-heart" id="btn-heart">
@@ -647,7 +551,7 @@
             </svg>
           </button>
 
-          <button class="btn btn-play" id="btn-play-album">
+          <button class="btn btn-play" id="btn-play-album" onclick="playFirstTrack()">
             <svg class="icon" id="play-icon" viewBox="0 0 24 24">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -657,7 +561,7 @@
             </svg>
           </button>
 
-          <button class="btn btn-icon" id="btn-shuffle">
+          <button class="btn btn-icon" id="btn-shuffle" onclick="shuffleTracks()">
             <svg class="icon" viewBox="0 0 24 24">
               <polyline points="16 3 21 3 21 8"></polyline>
               <line x1="4" y1="20" x2="21" y2="3"></line>
@@ -670,416 +574,278 @@
       </div>
     </div>
 
-    <!-- Player controls (initially hidden, shown when a track is playing) -->
-    <div class="player-controls" id="player-controls" style="display: none;">
-      <div class="time-display">
-        <span class="time" id="current-time">0:00</span>
-        <span class="current-track-title" id="current-track-title">Track Title</span>
-        <span class="time" id="duration">0:00</span>
-      </div>
+    <!-- Track list -->
+    <div class="track-list">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Length</th>
+          </tr>
+        </thead>
+        <tbody id="track-table">
+          <!-- Tracks will be populated dynamically -->
+        </tbody>
+      </table>
+    </div>
 
-      <div class="progress-container" id="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
-        <div class="progress-handle" id="progress-handle"></div>
-      </div>
-
-      <div class="controls-panel">
-        <div class="volume-controls">
-          <button class="btn-small" id="btn-volume">
-            <svg class="icon" id="volume-icon" viewBox="0 0 24 24">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-            <svg class="icon" id="mute-icon" viewBox="0 0 24 24" style="display: none;">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <line x1="23" y1="9" x2="17" y2="15"></line>
-              <line x1="17" y1="9" x2="23" y2="15"></line>
-            </svg>
-          </button>
-
-          <div class="volume-slider" id="volume-slider">
-            <div class="volume-level" id="volume-level"></div>
-            <div class="volume-handle" id="volume-handle"></div>
-          </div>
-        </div>
-
-        <div class="playback-controls">
-          <button class="btn-small" id="btn-prev">
-            <svg class="icon" viewBox="0 0 24 24">
-              <polygon points="19 20 9 12 19 4 19 20"></polygon>
-              <line x1="5" y1="19" x2="5" y2="5"></line>
-            </svg>
-          </button>
-
-          <button class="btn btn-play" id="btn-play">
-            <svg class="icon" id="main-play-icon" viewBox="0 0 24 24">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-            <svg class="icon" id="main-pause-icon" viewBox="0 0 24 24" style="display: none;">
-              <rect x="6" y="4" width="4" height="16"></rect>
-              <rect x="14" y="4" width="4" height="16"></rect>
-            </svg>
-          </button>
-
-          <button class="btn-small" id="btn-next">
-            <svg class="icon" viewBox="0 0 24 24">
-              <polygon points="5 4 15 12 5 20 5 4"></polygon>
-              <line x1="19" y1="5" x2="19" y2="19"></line>
-            </svg>
-          </button>
-        </div>
-
-        <button class="btn-small" id="btn-fullscreen">
-          <svg class="icon" id="maximize-icon" viewBox="0 0 24 24">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+    <!-- Player display -->
+    <div class="player-controls" id="player-controls">
+      <p id="current-track">Now Playing: None</p>
+      <div class="playback-controls" style="display: flex; justify-content: center; margin-top: 1rem;">
+        <button class="btn-small" onclick="playPreviousTrack()">
+          <svg class="icon" viewBox="0 0 24 24">
+            <polygon points="19 20 9 12 19 4 19 20"></polygon>
+            <line x1="5" y1="19" x2="5" y2="5"></line>
           </svg>
-          <svg class="icon" id="minimize-icon" viewBox="0 0 24 24" style="display: none;">
-            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+        </button>
+
+        <button class="btn btn-play" id="btn-play">
+          <svg class="icon" id="main-play-icon" viewBox="0 0 24 24">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <svg class="icon" id="main-pause-icon" viewBox="0 0 24 24" style="display: none;">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+        </button>
+
+        <button class="btn-small" onclick="playNextTrack()">
+          <svg class="icon" viewBox="0 0 24 24">
+            <polygon points="5 4 15 12 5 20 5 4"></polygon>
+            <line x1="19" y1="5" x2="19" y2="19"></line>
           </svg>
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- Track list -->
-    <div class="track-list">
-      <div class="track-list-header">
-        <div class="track-number">#</div>
-        <div style="flex: 1;">TITLE</div>
-        <div style="width: 4rem; text-align: right;">
-          <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        </div>
-      </div>
-
-      <div class="track-list-body" id="track-list">
-        <!-- Tracks will be populated dynamically -->
-      </div>
-    </div>
-
-    <!-- Album cover dialog -->
-    <div class="dialog-overlay" id="dialog-overlay">
-      <div class="dialog-content">
-        <img id="dialog-image" src="https://placehold.co/400x400/18181b/FFFFFF?text=Album+Cover" alt="Album Cover" class="dialog-image">
-      </div>
-    </div>
-
-    <!-- Toast notification -->
-    <div class="toast" id="toast">
-      <div class="toast-title" id="toast-title">Notification</div>
-      <div class="toast-description" id="toast-description">This is a notification message.</div>
+  <div id="dialog-overlay" class="dialog-overlay" onclick="closeDialog()">
+    <div class="dialog-content">
+      <img id="dialog-image" src="https://placehold.co/400x400/18181b/FFFFFF?text=Album+Cover" alt="Album Cover" class="dialog-image">
     </div>
   </div>
 
+  <div class="toast" id="toast">
+    <div class="toast-title" id="toast-title">Notification</div>
+    <div class="toast-description" id="toast-description">This is a notification message.</div>
+  </div>
+
   <script>
-    // Album data - in a real app, this would come from an API
-    const albumData = {
-      name: "Midnight Echoes",
-      cover: "https://placehold.co/400x400/18181b/FFFFFF?text=Album+Cover",
-      year: 2023,
-      tracks: [
-        { id: 1, title: "Into the Night", duration: 214, file: "track1.mp3" },
-        { id: 2, title: "Starlight Dreams", duration: 187, file: "track2.mp3" },
-        { id: 3, title: "Neon Reflections", duration: 243, file: "track3.mp3" },
-        { id: 4, title: "Midnight Drive", duration: 198, file: "track4.mp3" },
-        { id: 5, title: "Urban Echoes", duration: 221, file: "track5.mp3" },
-        { id: 6, title: "Distant Memories", duration: 256, file: "track6.mp3" },
-        { id: 7, title: "Twilight Horizon", duration: 203, file: "track7.mp3" },
-      ]
-    };
-
-    // DOM elements
-    const playerContainer = document.getElementById('player-container');
-    const audioPlayer = document.getElementById('audio-player');
-    const albumCover = document.getElementById('album-cover');
-    const albumTitle = document.getElementById('album-title');
-    const albumMeta = document.getElementById('album-meta');
-    const trackList = document.getElementById('track-list');
-    const btnHeart = document.getElementById('btn-heart');
-    const heartIcon = document.getElementById('heart-icon');
-    const btnPlayAlbum = document.getElementById('btn-play-album');
-    const btnShuffle = document.getElementById('btn-shuffle');
-    const playerControls = document.getElementById('player-controls');
-    const currentTrackTitle = document.getElementById('current-track-title');
-    const currentTimeDisplay = document.getElementById('current-time');
-    const durationDisplay = document.getElementById('duration');
-    const progressBar = document.getElementById('progress-bar');
-    const progressHandle = document.getElementById('progress-handle');
-    const progressContainer = document.getElementById('progress-container');
-    const btnVolume = document.getElementById('btn-volume');
-    const volumeIcon = document.getElementById('volume-icon');
-    const muteIcon = document.getElementById('mute-icon');
-    const volumeSlider = document.getElementById('volume-slider');
-    const volumeLevel = document.getElementById('volume-level');
-    const volumeHandle = document.getElementById('volume-handle');
-    const btnPrev = document.getElementById('btn-prev');
-    const btnPlay = document.getElementById('btn-play');
-    const btnNext = document.getElementById('btn-next');
-    const btnFullscreen = document.getElementById('btn-fullscreen');
-    const maximizeIcon = document.getElementById('maximize-icon');
-    const minimizeIcon = document.getElementById('minimize-icon');
-    const playIcon = document.getElementById('play-icon');
-    const pauseIcon = document.getElementById('pause-icon');
-    const mainPlayIcon = document.getElementById('main-play-icon');
-    const mainPauseIcon = document.getElementById('main-pause-icon');
-    const dialogOverlay = document.getElementById('dialog-overlay');
-    const dialogImage = document.getElementById('dialog-image');
-    const albumCoverOverlay = document.getElementById('album-cover-overlay');
-    const toast = document.getElementById('toast');
-    const toastTitle = document.getElementById('toast-title');
-    const toastDescription = document.getElementById('toast-description');
-
-    // State variables
-    let tracks = [...albumData.tracks];
+    // Global variables
+    let trackOrder = [];
     let currentTrackIndex = -1;
     let isPlaying = false;
-    let isMuted = false;
-    let isFullscreen = false;
-    let isLiked = false;
-    let volume = 0.8;
-    let duration = 0;
-    let updateInterval;
 
-    // Format time (seconds to MM:SS)
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
+    // Load album data from JSON file
+    async function loadAlbumData() {
+      try {
+        const response = await fetch('data/album-data.json');
+        if (!response.ok) throw new Error('Failed to fetch album data');
+        const data = await response.json();
 
-    // Calculate total duration of all tracks
-    function calculateTotalDuration() {
-      return tracks.reduce((total, track) => total + track.duration, 0);
-    }
+        // Update album info
+        document.getElementById('album-cover').src = data.cover;
+        document.getElementById('dialog-image').src = data.cover;
+        document.getElementById('album-name').textContent = data.name;
 
-    // Initialize the player
-    function initPlayer() {
-      // Set album info
-      albumTitle.textContent = albumData.name;
-      albumCover.src = albumData.cover;
-      dialogImage.src = albumData.cover;
-      
-      const totalDuration = calculateTotalDuration();
-      albumMeta.textContent = `${albumData.year} · ${tracks.length} songs · ${formatTime(totalDuration)}`;
+        // Populate track table
+        const trackTable = document.getElementById('track-table');
+        const tracks = data.tracks;
 
-      // Populate track list
-      renderTrackList();
+        trackOrder = tracks; // Store the original order
+        let totalSeconds = 0;
+    
+        for (let i = 0; i < tracks.length; i++) {
+          const track = tracks[i];
+          
+          // Create a new row for each track
+          const row = document.createElement('tr');
+          row.setAttribute('data-track', track.file);
+          row.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${track.title}</td>
+            <td>${formatDuration(track.duration)}</td>
+          `;
 
-      // Set initial volume
-      audioPlayer.volume = volume;
-      volumeLevel.style.width = `${volume * 100}%`;
-      volumeHandle.style.left = `${volume * 100}%`;
+          // Check if the track file exists
+          const trackAccessible = await checkFileAccessibility(`tracks/${track.file}`);
+          if (!trackAccessible) {
+            row.classList.add('unavailable'); // Add a class to grey out the row
+            row.style.color = '#888'; // Grey out the text
+            track.inaccessible = true; // Mark the track as inaccessible
+          } else {
+            // Add click event listener to play the track
+            row.addEventListener('click', () => {
+              currentTrackIndex = i; // Update the current track index
+              playTrack(track.file, track.title);
+            });
+            totalSeconds += track.duration;
+          }
 
-      // Add event listeners
-      setupEventListeners();
-    }
-
-    // Render track list
-    function renderTrackList() {
-      trackList.innerHTML = '';
-      
-      tracks.forEach((track, index) => {
-        const trackItem = document.createElement('div');
-        trackItem.className = `track-item ${currentTrackIndex === index ? 'active' : ''}`;
-        trackItem.dataset.index = index;
-        
-        trackItem.innerHTML = `
-          <div class="track-number">
-            <span class="track-number-text">${index + 1}</span>
-            <div class="track-play-icon">
-              ${currentTrackIndex === index && isPlaying ? 
-                `<div class="equalizer">
-                  <div class="equalizer-bar"></div>
-                  <div class="equalizer-bar"></div>
-                  <div class="equalizer-bar"></div>
-                </div>` : 
-                `<svg class="icon" viewBox="0 0 24 24">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>`
-              }
-            </div>
-          </div>
-          <div class="track-title">${track.title}</div>
-          <div class="track-duration">${formatTime(track.duration)}</div>
-        `;
-        
-        trackItem.addEventListener('click', () => {
-          playTrack(index);
-        });
-        
-        trackList.appendChild(trackItem);
-      });
-    }
-
-    // Play a specific track
-    function playTrack(index) {
-      if (index >= 0 && index < tracks.length) {
-        const previousIndex = currentTrackIndex;
-        currentTrackIndex = index;
-        
-        // Update UI
-        if (previousIndex !== -1) {
-          const previousTrack = trackList.querySelector(`.track-item[data-index="${previousIndex}"]`);
-          if (previousTrack) previousTrack.classList.remove('active');
+          trackTable.appendChild(row);
         }
-        
-        const currentTrack = trackList.querySelector(`.track-item[data-index="${currentTrackIndex}"]`);
-        if (currentTrack) currentTrack.classList.add('active');
-        
-        // Show player controls
-        playerControls.style.display = 'block';
-        
-        // Update current track info
-        currentTrackTitle.textContent = tracks[currentTrackIndex].title;
-        duration = tracks[currentTrackIndex].duration;
-        durationDisplay.textContent = formatTime(duration);
-        
-        // In a real app, set the audio source and play
-        // audioPlayer.src = `tracks/${tracks[currentTrackIndex].file}`;
-        // audioPlayer.play();
-        
-        // For demo purposes, simulate playback
-        setIsPlaying(true);
-        startProgressUpdate();
+
+        document.getElementById('album-info').textContent = `${data.year} · ${tracks.length} songs · ${formatDuration(totalSeconds)}`;
+      } catch (error) {
+        console.error('Error loading album data:', error);
+        showToast('Error', 'Failed to load album data. Please try again later.');
       }
     }
 
-    // Toggle play/pause
-    function togglePlayPause() {
-      if (currentTrackIndex === -1 && tracks.length > 0) {
-        playTrack(0);
-      } else {
-        setIsPlaying(!isPlaying);
+    // Check if a file is accessible
+    async function checkFileAccessibility(url) {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        return response.ok;
+      } catch {
+        return false;
       }
     }
 
-    // Set playing state and update UI
-    function setIsPlaying(state) {
-      isPlaying = state;
-      
-      // Update play/pause buttons
-      if (isPlaying) {
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-        mainPlayIcon.style.display = 'none';
-        mainPauseIcon.style.display = 'block';
-        albumCover.classList.add('playing');
-        
-        // In a real app, play the audio
-        // audioPlayer.play();
-        
-        // For demo, start progress update
-        startProgressUpdate();
-      } else {
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-        mainPlayIcon.style.display = 'block';
-        mainPauseIcon.style.display = 'none';
-        albumCover.classList.remove('playing');
-        
-        // In a real app, pause the audio
-        // audioPlayer.pause();
-        
-        // For demo, stop progress update
-        clearInterval(updateInterval);
-      }
-      
-      // Update track list to show equalizer for current track
-      renderTrackList();
+    // Format duration in seconds to MM:SS
+    function formatDuration(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
-    // Play next track
+    // Play a track
+    function playTrack(file, title) {
+      const audioPlayer = document.getElementById('audio-player');
+      const currentTrackText = document.getElementById('current-track');
+      const playIcon = document.getElementById('play-icon');
+      const pauseIcon = document.getElementById('pause-icon');
+      const mainPlayIcon = document.getElementById('main-play-icon');
+      const mainPauseIcon = document.getElementById('main-pause-icon');
+
+      // Update UI to show playing state
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'block';
+      mainPlayIcon.style.display = 'none';
+      mainPauseIcon.style.display = 'block';
+      isPlaying = true;
+
+      // Set audio source and play
+      audioPlayer.src = `tracks/${file}`;
+      audioPlayer.play();
+      currentTrackText.textContent = `Now Playing: ${title}`;
+
+      // Add timeupdate event listener to handle skipping
+      audioPlayer.ontimeupdate = () => {
+        if (audioPlayer.duration - audioPlayer.currentTime <= 4) {
+          // Ensure the next track is prepared for playback
+          audioPlayer.onended = () => playNextTrack();
+        }
+      };
+
+      // Ensure next track plays when the song ends
+      audioPlayer.onended = playNextTrack;
+    }
+
+    // Play the first track
+    function playFirstTrack() {
+      if (trackOrder.length > 0) {
+        currentTrackIndex = 0; // Set to the first track
+        playNextAccessibleTrack(); // Play the first accessible track
+      }
+    }
+
+    // Play the next track
     function playNextTrack() {
-      const nextIndex = (currentTrackIndex + 1) % tracks.length;
-      playTrack(nextIndex);
+      if (trackOrder.length > 0) {
+        currentTrackIndex = (currentTrackIndex + 1) % trackOrder.length;
+        playNextAccessibleTrack(); // Play the next accessible track
+      }
     }
 
-    // Play previous track
+    // Play the previous track
     function playPreviousTrack() {
-      const prevIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-      playTrack(prevIndex);
+      if (trackOrder.length > 0) {
+        currentTrackIndex = (currentTrackIndex - 1 + trackOrder.length) % trackOrder.length;
+        playPreviousAccessibleTrack(); // Play the previous accessible track
+      }
+    }
+
+    // Play the next accessible track
+    function playNextAccessibleTrack() {
+      for (let i = currentTrackIndex; i < trackOrder.length; i++) {
+        const track = trackOrder[i];
+        if (!track.inaccessible) {
+          currentTrackIndex = i;
+          playTrack(track.file, track.title);
+          return;
+        }
+      }
+      console.warn('No accessible tracks found to play next.');
+      showToast('Warning', 'No accessible tracks found to play next.');
+    }
+
+    // Play the previous accessible track
+    function playPreviousAccessibleTrack() {
+      for (let i = currentTrackIndex; i >= 0; i--) {
+        const track = trackOrder[i];
+        if (!track.inaccessible) {
+          currentTrackIndex = i;
+          playTrack(track.file, track.title);
+          return;
+        }
+      }
+      console.warn('No accessible tracks found to play previous.');
+      showToast('Warning', 'No accessible tracks found to play previous.');
     }
 
     // Shuffle tracks
     function shuffleTracks() {
-      const shuffled = [...tracks].sort(() => Math.random() - 0.5);
-      tracks = shuffled;
+      const shuffled = [...trackOrder].sort(() => Math.random() - 0.5);
+      const trackTable = document.getElementById('track-table');
+      trackTable.innerHTML = '';
+
+      shuffled.forEach((track, index) => {
+        const row = document.createElement('tr');
+        row.setAttribute('data-track', track.file);
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${track.title}</td>
+          <td>${formatDuration(track.duration)}</td>
+        `;
+
+        if (track.inaccessible) {
+          row.classList.add('unavailable');
+          row.style.color = '#888';
+        } else {
+          row.addEventListener('click', () => {
+            currentTrackIndex = index; // Update the current track index
+            playTrack(track.file, track.title);
+          });
+        }
+
+        trackTable.appendChild(row);
+      });
+
+      trackOrder = shuffled; // Update the global track order
+      currentTrackIndex = -1; // Reset current track index since the order changed
       
-      // Reset current track index if a track is playing
-      if (currentTrackIndex !== -1) {
-        const currentTrackId = tracks[currentTrackIndex].id;
-        currentTrackIndex = shuffled.findIndex(track => track.id === currentTrackId);
-      }
-      
-      // Update UI
-      renderTrackList();
-      
-      // Show toast notification
       showToast('Tracks shuffled', 'Your playlist has been randomized');
     }
 
-    // Toggle fullscreen
-    function toggleFullscreen() {
-      isFullscreen = !isFullscreen;
-      
-      if (isFullscreen) {
-        playerContainer.classList.add('fullscreen');
-        maximizeIcon.style.display = 'none';
-        minimizeIcon.style.display = 'block';
-        
-        // In a real app, you might use the Fullscreen API
-        // playerContainer.requestFullscreen();
-      } else {
-        playerContainer.classList.remove('fullscreen');
-        maximizeIcon.style.display = 'block';
-        minimizeIcon.style.display = 'none';
-        
-        // In a real app, you might use the Fullscreen API
-        // document.exitFullscreen();
-      }
+    // Open the dialog
+    function openDialog() {
+      document.getElementById('dialog-overlay').style.display = 'flex';
     }
 
-    // Toggle mute
-    function toggleMute() {
-      isMuted = !isMuted;
-      
-      if (isMuted) {
-        volumeIcon.style.display = 'none';
-        muteIcon.style.display = 'block';
-        audioPlayer.muted = true;
-      } else {
-        volumeIcon.style.display = 'block';
-        muteIcon.style.display = 'none';
-        audioPlayer.muted = false;
-      }
-    }
-
-    // Toggle like
-    function toggleLike() {
-      isLiked = !isLiked;
-      
-      if (isLiked) {
-        btnHeart.classList.add('active');
-        heartIcon.classList.add('filled');
-      } else {
-        btnHeart.classList.remove('active');
-        heartIcon.classList.remove('filled');
-      }
-    }
-
-    // Show dialog
-    function showDialog() {
-      dialogOverlay.classList.add('open');
-    }
-
-    // Hide dialog
-    function hideDialog() {
-      dialogOverlay.classList.remove('open');
+    // Close the dialog
+    function closeDialog() {
+      document.getElementById('dialog-overlay').style.display = 'none';
     }
 
     // Show toast notification
     function showToast(title, description) {
+      const toast = document.getElementById('toast');
+      const toastTitle = document.getElementById('toast-title');
+      const toastDescription = document.getElementById('toast-description');
+      
       toastTitle.textContent = title;
       toastDescription.textContent = description;
       toast.classList.add('show');
@@ -1089,183 +855,52 @@
       }, 3000);
     }
 
-    // Start progress update (for demo purposes)
-    function startProgressUpdate() {
-      let currentTime = 0;
-      clearInterval(updateInterval);
-      
-      updateInterval = setInterval(() => {
-        if (isPlaying) {
-          currentTime += 1;
-          
-          if (currentTime >= duration) {
-            playNextTrack();
-            return;
-          }
-          
-          // Update progress bar
-          const progress = (currentTime / duration) * 100;
-          progressBar.style.width = `${progress}%`;
-          progressHandle.style.left = `${progress}%`;
-          
-          // Update time display
-          currentTimeDisplay.textContent = formatTime(currentTime);
-        }
-      }, 1000);
-    }
+    // Toggle like button
+    document.getElementById('btn-heart').addEventListener('click', function() {
+      this.classList.toggle('active');
+      document.getElementById('heart-icon').classList.toggle('filled');
+    });
 
-    // Handle progress bar click/drag
-    function handleProgressChange(e) {
-      const rect = progressContainer.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / rect.width;
-      const newTime = Math.max(0, Math.min(1, pos)) * duration;
+    // Toggle play/pause for main play button
+    document.getElementById('btn-play').addEventListener('click', function() {
+      const audioPlayer = document.getElementById('audio-player');
       
-      // Update progress bar
-      const progress = (newTime / duration) * 100;
-      progressBar.style.width = `${progress}%`;
-      progressHandle.style.left = `${progress}%`;
-      
-      // Update time display
-      currentTimeDisplay.textContent = formatTime(newTime);
-      
-      // In a real app, set audio current time
-      // audioPlayer.currentTime = newTime;
-    }
-
-    // Handle volume slider click/drag
-    function handleVolumeChange(e) {
-      const rect = volumeSlider.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / rect.width;
-      volume = Math.max(0, Math.min(1, pos));
-      
-      // Update volume slider
-      volumeLevel.style.width = `${volume * 100}%`;
-      volumeHandle.style.left = `${volume * 100}%`;
-      
-      // Update audio volume
-      audioPlayer.volume = volume;
-      
-      // If volume is set to 0, show mute icon
-      if (volume === 0) {
-        volumeIcon.style.display = 'none';
-        muteIcon.style.display = 'block';
-        isMuted = true;
-      } else if (isMuted) {
-        volumeIcon.style.display = 'block';
-        muteIcon.style.display = 'none';
-        isMuted = false;
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        document.getElementById('main-play-icon').style.display = 'none';
+        document.getElementById('main-pause-icon').style.display = 'block';
+        document.getElementById('play-icon').style.display = 'none';
+        document.getElementById('pause-icon').style.display = 'block';
+        isPlaying = true;
+      } else {
+        audioPlayer.pause();
+        document.getElementById('main-play-icon').style.display = 'block';
+        document.getElementById('main-pause-icon').style.display = 'none';
+        document.getElementById('play-icon').style.display = 'block';
+        document.getElementById('pause-icon').style.display = 'none';
+        isPlaying = false;
       }
-    }
+    });
 
-    // Setup event listeners
-    function setupEventListeners() {
-      // Play/pause buttons
-      btnPlayAlbum.addEventListener('click', togglePlayPause);
-      btnPlay.addEventListener('click', togglePlayPause);
-      
-      // Navigation buttons
-      btnPrev.addEventListener('click', playPreviousTrack);
-      btnNext.addEventListener('click', playNextTrack);
-      
-      // Shuffle button
-      btnShuffle.addEventListener('click', shuffleTracks);
-      
-      // Fullscreen button
-      btnFullscreen.addEventListener('click', toggleFullscreen);
-      
-      // Volume button
-      btnVolume.addEventListener('click', toggleMute);
-      
-      // Heart button
-      btnHeart.addEventListener('click', toggleLike);
-      
-      // Album cover click (show dialog)
-      albumCover.addEventListener('click', showDialog);
-      albumCoverOverlay.addEventListener('click', showDialog);
-      
-      // Dialog click (hide dialog)
-      dialogOverlay.addEventListener('click', hideDialog);
-      
-      // Progress bar interactions
-      let isProgressDragging = false;
-      
-      progressContainer.addEventListener('mousedown', (e) => {
-        isProgressDragging = true;
-        handleProgressChange(e);
-      });
-      
-      document.addEventListener('mousemove', (e) => {
-        if (isProgressDragging) {
-          handleProgressChange(e);
-        }
-      });
-      
-      document.addEventListener('mouseup', () => {
-        isProgressDragging = false;
-      });
-      
-      // Volume slider interactions
-      let isVolumeDragging = false;
-      
-      volumeSlider.addEventListener('mousedown', (e) => {
-        isVolumeDragging = true;
-        handleVolumeChange(e);
-      });
-      
-      document.addEventListener('mousemove', (e) => {
-        if (isVolumeDragging) {
-          handleVolumeChange(e);
-        }
-      });
-      
-      document.addEventListener('mouseup', () => {
-        isVolumeDragging = false;
-      });
-      
-      // Audio player events (for a real implementation)
-      audioPlayer.addEventListener('timeupdate', () => {
-        // This would be used in a real implementation
-        // const currentTime = audioPlayer.currentTime;
-        // const duration = audioPlayer.duration || 1;
-        // const progress = (currentTime / duration) * 100;
-        // progressBar.style.width = `${progress}%`;
-        // progressHandle.style.left = `${progress}%`;
-        // currentTimeDisplay.textContent = formatTime(currentTime);
-      });
-      
-      audioPlayer.addEventListener('ended', () => {
+    // Handle keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.code === 'Space') {
+        // Toggle play/pause with spacebar
+        document.getElementById('btn-play').click();
+        e.preventDefault();
+      } else if (e.code === 'ArrowLeft') {
+        // Previous track with left arrow
+        playPreviousTrack();
+        e.preventDefault();
+      } else if (e.code === 'ArrowRight') {
+        // Next track with right arrow
         playNextTrack();
-      });
-      
-      // Keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        switch (e.key) {
-          case ' ':
-            togglePlayPause();
-            e.preventDefault();
-            break;
-          case 'ArrowRight':
-            playNextTrack();
-            e.preventDefault();
-            break;
-          case 'ArrowLeft':
-            playPreviousTrack();
-            e.preventDefault();
-            break;
-          case 'f':
-            toggleFullscreen();
-            e.preventDefault();
-            break;
-          case 'm':
-            toggleMute();
-            e.preventDefault();
-            break;
-        }
-      });
-    }
+        e.preventDefault();
+      }
+    });
 
     // Initialize the player
-    initPlayer();
+    loadAlbumData();
   </script>
 </body>
 </html>
